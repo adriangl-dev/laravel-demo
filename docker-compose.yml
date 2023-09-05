@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+  webserver:
+    image: caddy:2.7.4-alpine
+    container_name: webserver
+    restart: unless-stopped
+    ports:
+    - "80:80"
+    - "443:443"
+    volumes:
+    - ./:/srv
+    - caddy_data:/data
+    - caddy_config:/config
+    - ./Caddyfile:/etc/caddy/Caddyfile
+    depends_on:
+      - php
+      - database
+  php:
+    container_name: php
+    build: .
+    restart: unless-stopped
+    working_dir: /srv
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/srv
+  database:
+    image: mysql:8.1.0
+    container_name: database
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: demo
+      MYSQL_ROOT_PASSWORD: Pass1234
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - db_data:/var/lib/mysql/
+
+volumes:
+  caddy_data:
+  caddy_config:
+  db_data:
