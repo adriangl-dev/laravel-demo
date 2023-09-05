@@ -16,30 +16,40 @@ services:
     depends_on:
       - php
       - database
+    networks:
+      - laravel_network
   php:
     container_name: php
     build: .
+    image: php-laravel:latest
     restart: unless-stopped
     working_dir: /srv
-    ports:
-      - "9000:9000"
+    expose:
+      - 9000
     volumes:
       - .:/srv
+    networks:
+      - laravel_network
   database:
     image: mysql:8.1.0
     container_name: database
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:3306"
     environment:
-      MYSQL_DATABASE: demo
-      MYSQL_ROOT_PASSWORD: Pass1234
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
       - db_data:/var/lib/mysql/
+    networks:
+      - laravel_network
 
 volumes:
   caddy_data:
   caddy_config:
   db_data:
+
+networks:
+  laravel_network:
