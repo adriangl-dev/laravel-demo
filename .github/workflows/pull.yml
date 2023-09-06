@@ -1,8 +1,5 @@
 name: Integración continua (CI)
 on:
-  push:
-    branches:
-      - master
   workflow_dispatch:
     
 jobs:
