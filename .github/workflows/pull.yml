@@ -10,7 +10,7 @@ jobs:
     name: CI
     runs-on: ubuntu-latest
     steps:
-    - name: Conexión SSH y git pull del proyecto
+    - name: Deploy del proyecto
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.SSH_HOST }}
@@ -18,5 +18,8 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           cd /home/ec2-user/laravel-demo
-          git pull https://${{secrets.PAT}}@github.com/adriangl-dev/laravel-demo.git master
+          # git pull https://${{secrets.PAT}}@github.com/adriangl-dev/laravel-demo.git master
+          git fetch
+          git pull
           docker-compose exec php composer install
+          docker-compose exec php php artisan migrate
