@@ -1,4 +1,4 @@
-name: Deploy via SSH
+name: Integración continua (CI)
 on: [workflow_dispatch, push]
 jobs:
   deploy:
@@ -15,3 +15,10 @@ jobs:
           # git update to latest codebase on main branch
           cd /home/ec2-user/laravel-demo
           git pull https://${{secrets.PAT}}@github.com/adriangl-dev/laravel-demo.git master
+    - uses: actions/checkout@v1
+    - name: Instalar dependencias con composer
+      run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+    - name: Regenerar KEY
+      run: php artisan key:generate
+    - name: Migrar BD
+      run: php artisan migrate
