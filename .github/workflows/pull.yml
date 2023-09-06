@@ -13,5 +13,5 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         script: |
           # git update to latest codebase on main branch
-          # cd /home/ec2-user/laravel-demo && git pull
-          touch esto_es_prueba
+          cd /home/ec2-user/laravel-demo
+          git pull https://${{secrets.PAT}}@github.com/adriangl-dev/laravel-demo.git master
