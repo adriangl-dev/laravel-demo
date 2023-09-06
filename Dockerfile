@@ -25,7 +25,8 @@ RUN apk update && apk add --no-cache \
     php82-gd \
     php82-dom \
     php82-session \
-    php82-zlib
+    php82-zlib \
+    nodejs npm
 
 # Add and Enable PHP-PDO Extenstions
 RUN docker-php-ext-install pdo pdo_mysql
