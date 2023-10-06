@@ -1,0 +1,48 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: laravel-demo
+    type: database
+  name: mysql-server
+  namespace: laravel-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-demo
+      type: database
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: laravel-demo
+        type: database
+    spec:
+      containers:
+        - env:
+            - name: MYSQL_DATABASE
+              value: demo
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-pw
+                  key: password
+            - name: SERVICE_NAME
+              value: mysql
+            - name: SERVICE_TAGS
+              value: dev
+          image: mysql:8.1.0
+          name: database
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-persist-data
+              mountPath: /var/lib/mysql
+      restartPolicy: Always
+      volumes:
+        - name: mysql-persist-data
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim

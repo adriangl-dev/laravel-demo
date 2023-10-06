@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: laravel-demo
+    type: webserver
+  name: webserver
+  namespace: default
+spec:
+  type: NodePort
+  ports:
+    - name: web-port
+      port: 80
+  selector:
+    app: laravel-demo
+    type: webserver
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: laravel-demo
+    type: webserver
+  name: webserver
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: webserver
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: laravel-demo
+        type: webserver
+    spec:
+      containers:
+        - name: caddy-server
+          image: caddy:2.7.4-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config-caddy
+              mountPath: /etc/caddy/
+            - name: web-root
+              mountPath: /srv
+              readOnly: true
+      initContainers:
+        - name: setup-web-root
+          command:
+              - "/bin/sh"
+              - "-c"
+              - "cp -r /app/. /srv"
+          image: php-laravel:latest
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+              - name: web-root
+                mountPath: /srv
+      restartPolicy: Always
+      volumes:
+        - name: config-caddy
+          configMap:
+            name: caddy-config
+            items:
+            - key: Caddyfile
+              path: Caddyfile
+        - name: web-root
+          persistentVolumeClaim:
+            claimName: webdata-pv-claim

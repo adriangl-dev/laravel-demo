@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: laravel-demo
+    type: webserver
+  name: caddy-server
+  namespace: laravel-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      type: webserver
+      fpm: php-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: laravel-demo
+        type: webserver
+        fpm: php-app
+    spec:
+      containers:
+        - name: php-laravel
+          image: php-laravel:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+          workingDir: /srv
+          volumeMounts:
+            - name: env-file
+              mountPath: /app-env
+            - name: web-root
+              mountPath: /srv
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 200Mi
+            limits:
+              cpu: 0.5
+              memory: 200Mi
+        - name: caddy-server
+          image: caddy:2.7.4-alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: env-file
+              mountPath: /app-env
+            - name: config-caddy
+              mountPath: /etc/caddy/
+            - name: web-root
+              mountPath: /srv
+              readOnly: true
+          resources:
+            requests:
+              cpu: 0.5
+              memory: 200Mi
+            limits:
+              cpu: 0.5
+              memory: 200Mi
+      restartPolicy: Always
+      initContainers:
+        - name: setup-web-root
+          command: 
+              - "/bin/sh"
+              - "-c"
+              - "cp -r /app/. /srv && cp /app-env/.env /srv"
+          image: php-laravel:latest
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+              - name: env-file
+                mountPath: /app-env
+              - name: web-root
+                mountPath: /srv
+      volumes:
+        - name: config-caddy
+          configMap:
+            name: caddy-config
+            items:
+            - key: Caddyfile
+              path: Caddyfile
+        - name: env-file
+          configMap:
+            name: env-laravel
+            items:
+              - key: .env
+                path: .env
+        - name: web-root
+          persistentVolumeClaim:
+            claimName: caddy-pv-claim

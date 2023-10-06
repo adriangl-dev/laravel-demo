@@ -1,0 +1,17 @@
+secretGenerator:
+- name: mysql-pw
+  namespace: laravel-demo
+  literals:
+  - password=Pass1234
+resources:
+  - laravel-namespace.yaml
+  - mysql-pvc.yaml
+  - mysql-service.yaml
+  - mysql-deployment.yaml
+  - caddy-configmap.yaml
+  - caddy-env-configmap.yaml
+  - caddy-service.yaml
+  - caddy-php-service.yaml
+  - caddy-deployment.yaml
+  - caddy-hpa.yaml
+  - caddy-pvc.yaml
