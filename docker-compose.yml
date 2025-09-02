@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
   webserver:
     image: caddy:2.7.4-alpine
@@ -9,25 +7,22 @@ services:
     - "80:80"
     - "443:443"
     volumes:
-    - ./:/srv
+    - ./src/public:/srv/public
     - caddy_data:/data
     - caddy_config:/config
     - ./Caddyfile:/etc/caddy/Caddyfile
     depends_on:
-      - php
+      - app
       - database
     networks:
       - laravel_network
-  php:
-    container_name: php
+  app:
+    container_name: laravel-app
     build: .
-    image: php-laravel:latest
+    image: laravel-app:latest
     restart: unless-stopped
-    working_dir: /srv
-    expose:
-      - 9000
     volumes:
-      - .:/srv
+      - ./src:/srv
     networks:
       - laravel_network
   database:
@@ -35,10 +30,10 @@ services:
     container_name: database
     restart: unless-stopped
     ports:
-      - "${DB_PORT}:3306"
+      - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: demo
+      MYSQL_ROOT_PASSWORD: Pass1234
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
     volumes:
