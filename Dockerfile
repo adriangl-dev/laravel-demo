@@ -13,10 +13,11 @@ RUN apk add --no-cache \
     oniguruma-dev \
     icu-dev \
     bash \
-    shadow
+    shadow \
+    libpq-dev
 
 # Instalar extensiones PHP necesarias para Laravel
-RUN docker-php-ext-install pdo pdo_mysql mbstring bcmath intl gd
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring bcmath intl gd
 
 # Instalar Composer globalmente
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

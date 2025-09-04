@@ -13,38 +13,41 @@ services:
     - ./Caddyfile:/etc/caddy/Caddyfile
     depends_on:
       - app
-      - database
-    networks:
-      - laravel_network
+      - pgsql
   app:
+    image: laravel-app:latest
     container_name: laravel-app
     build: .
-    image: laravel-app:latest
+    env_file:
+      - ./src/.env.production
     restart: unless-stopped
-    volumes:
-      - ./src:/srv
-    networks:
-      - laravel_network
-  database:
-    image: mysql:8.1.0
-    container_name: database
+  pgsql:
+    container_name: pgsql
+    image: postgres
     restart: unless-stopped
-    ports:
-      - "3306:3306"
+    env_file:
+      - ./src/.env.production
     environment:
-      MYSQL_DATABASE: demo
-      MYSQL_ROOT_PASSWORD: Pass1234
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
     volumes:
-      - db_data:/var/lib/mysql/
-    networks:
-      - laravel_network
+      - postgres_data:/var/lib/postgresql/data
+  # database:
+  #   image: mysql:8.1.0
+  #   container_name: database
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${DB_PORT}:3306"
+  #   environment:
+  #     MYSQL_DATABASE: ${DB_DATABASE}
+  #     MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+  #   volumes:
+  #     - db_data:/var/lib/mysql/
 
 volumes:
   caddy_data:
   caddy_config:
-  db_data:
-
-networks:
-  laravel_network:
+  postgres_data:

@@ -1,0 +1,7 @@
+src/node_modules
+src/public/storage
+/src/storage/*.key
+/src/vendor/*
+/.idea
+/.vscode
+src/.env*
