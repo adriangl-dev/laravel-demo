@@ -19,10 +19,10 @@ RUN apk add --no-cache \
 RUN docker-php-ext-install pdo pdo_mysql mbstring bcmath intl gd
 
 # Instalar Composer globalmente
-COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
-WORKDIR /srv/src
+WORKDIR /srv
 
 # Copy composer.lock and composer.json
 COPY src/composer.lock src/composer.json ./
@@ -37,7 +37,7 @@ USER www-data
 RUN composer install --no-dev --optimize-autoloader
 
 # Ajustar permisos para storage y bootstrap/cache
-RUN chown -R www-data:www-data /srv/src/storage /srv/src/bootstrap/cache
+RUN chown -R www-data:www-data /srv/storage /srv/bootstrap/cache
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
