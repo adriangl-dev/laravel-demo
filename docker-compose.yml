@@ -15,7 +15,7 @@ services:
       - app
       - pgsql
   app:
-    image: laravel-app:latest
+    image: ghcr.io/adriangl-dev/laravel-app:latest
     container_name: laravel-app
     build: .
     env_file:

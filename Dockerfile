@@ -1,7 +1,7 @@
-# Set master image
-FROM php:8.4-fpm-alpine
+# Etapa 1: build
+FROM php:8.4-fpm-alpine AS build
 
-# Instalar dependencias del sistema necesarias para extensiones PHP y composer
+# Instalar dependencias necesarias para composer y extensiones
 RUN apk add --no-cache \
     curl \
     libpng-dev \
@@ -14,32 +14,39 @@ RUN apk add --no-cache \
     icu-dev \
     bash \
     shadow \
-    libpq-dev
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring bcmath intl gd
 
-# Instalar extensiones PHP necesarias para Laravel
-RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring bcmath intl gd
-
-# Instalar Composer globalmente
+# Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /srv
 
-# Copy composer.lock and composer.json
-COPY src/composer.lock src/composer.json ./
-
-# Copiar el resto del proyecto
+# Copiar solo los archivos de Composer primero (para cache)
 COPY --chown=www-data:www-data src/. .
-
-# Change current user to www
-USER www-data
 
 # Instalar dependencias PHP
 RUN composer install --no-dev --optimize-autoloader
 
-# Ajustar permisos para storage y bootstrap/cache
+# Ajustar permisos
 RUN chown -R www-data:www-data /srv/storage /srv/bootstrap/cache
 
-# Expose port 9000 and start php-fpm server
+# =========================
+# Etapa 2: runtime
+FROM php:8.4-fpm-alpine
+
+# Instalar solo extensiones necesarias para correr Laravel
+RUN apk add --no-cache \
+    libpng-dev libjpeg-turbo-dev freetype-dev icu-dev libpq-dev oniguruma-dev zlib-dev \
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql mbstring bcmath intl gd
+
+WORKDIR /srv
+
+# Copiar la app ya construida desde la etapa de build
+COPY --from=build /srv /srv
+
+# Ajustar usuario
+USER www-data
+
 EXPOSE 9000
 CMD ["php-fpm"]
