@@ -3,6 +3,7 @@ src/storage/*.key
 .env
 .env.backup
 .env.production
+src/.env*
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml

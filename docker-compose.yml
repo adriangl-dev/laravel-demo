@@ -1,32 +1,20 @@
 services:
-  webserver:
-    image: caddy:2.7.4-alpine
-    container_name: webserver
+  app:
+    container_name: laravel-app
+    image: ghcr.io/adriangl-dev/laravel-app:latest
+    env_file:
+      - ./src/.env.pre
     restart: unless-stopped
     ports:
-    - "80:80"
-    - "443:443"
-    volumes:
-    - ./src/public:/srv/public
-    - caddy_data:/data
-    - caddy_config:/config
-    - ./Caddyfile:/etc/caddy/Caddyfile
+      - "80:80"
     depends_on:
-      - app
       - pgsql
-  app:
-    image: ghcr.io/adriangl-dev/laravel-app:latest
-    container_name: laravel-app
-    build: .
-    env_file:
-      - ./src/.env.production
-    restart: unless-stopped
   pgsql:
     container_name: pgsql
     image: postgres
     restart: unless-stopped
     env_file:
-      - ./src/.env.production
+      - ./src/.env.pre
     environment:
       POSTGRES_DB: ${DB_DATABASE}
       POSTGRES_USER: ${DB_USERNAME}
@@ -48,6 +36,4 @@ services:
   #     - db_data:/var/lib/mysql/
 
 volumes:
-  caddy_data:
-  caddy_config:
   postgres_data:
